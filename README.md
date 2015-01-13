@@ -2,6 +2,8 @@
 
 These are just some experiments using the [R language](http://www.r-project-org).
 
+To clone the test data simple execute the `prepare.sh` file.
+
 ## dc-superheroes.R
 
 At the moment this script only draws a plot with the number of new superheroes
