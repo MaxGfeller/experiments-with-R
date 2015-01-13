@@ -1,6 +1,7 @@
 data <- read.csv("test-data/comic-characters/dc-wikia-data.csv", TRUE)
 jpeg("output/number-of-heroes.jpg")
 hist(data$YEAR, main="Number of new superheroes", xlab="year", ylab="Number of new superheroes")
+femaleCharacters <- subset(data, SEX=='Female Characters')
 jpeg("output/number-of-female-characters.jpg")
-hist(data$YEAR[data$SEX == "Female Characters"], main="Number of female characters", xlab="Year", ylab="Number of female characters")
+hist(femaleCharacters$YEAR, main="Number of female characters", xlab="Year", ylab="Number of female characters")
 dev.off()
