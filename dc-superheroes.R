@@ -1,14 +1,46 @@
+# install.packages("ggplot2", dependencies=c("Depends", "Imports"), repos = "http://cran.us.r-project.org")
+library("ggplot2")
+
 # read data from csf file
 data <- read.csv("test-data/comic-characters/dc-wikia-data.csv", TRUE)
 
-# redirect plot output into file
-jpeg("output/dc-superheroes/number-of-heroes.jpg")
-hist(data$YEAR, main="Number of new superheroes", xlab="year", ylab="Number of new superheroes")
+# create an empty data frame
+characters <- data.frame(
+  Year=integer(),
+  femaleCharacters=integer(),
+  maleCharacters=integer()
+)
 
-# create subset for female characters
-femaleCharacters <- subset(data, SEX=='Female Characters')
-jpeg("output/dc-superheroes/number-of-female-characters.jpg")
-hist(femaleCharacters$YEAR, main="Number of female characters", xlab="Year", ylab="Number of female characters")
+addToFrame <- function(x) {
+  if (!is.na(x["YEAR"]) && !is.null(x["YEAR"])) {
+    if (!(as.integer(x["YEAR"]) %in% row.names(characters))) {
+      # add a new year
+      newYear <- data.frame(
+        Year=as.integer(x["YEAR"]),
+        femaleCharacters=0,
+        maleCharacters=0
+      )
+      row.names(newYear) <- as.integer(x["YEAR"])
+      characters <<- rbind(characters, newYear)
+    }
 
-# sign off
-dev.off()
+    columnToUpdate <- "femaleCharacters"
+    if (x["SEX"] == "Male Characters") {
+      columnToUpdate <- "maleCharacters"
+    }
+    characters[x["YEAR"], columnToUpdate]<<-as.integer(characters[x["YEAR"], columnToUpdate]) + 1
+  }
+}
+
+invisible(apply(data, 1, addToFrame))
+invisible(characters <- characters[order(rownames(characters)), ])
+
+jpeg("output/dc-superheroes/male-vs-female-superheroes.jpg", width=1200, height=400)
+ggplot(data=characters, aes(
+  x=Year
+)) +
+labs(y="Characters created") +
+scale_color_discrete(name="Sex") +
+scale_x_continuous(breaks = round(seq(min(characters$Year), max(characters$Year), by = 5), 1)) +
+geom_line(aes(y=maleCharacters, ylab="Characters created", colour="male")) +
+geom_line(aes(y=femaleCharacters, colour="female"))
